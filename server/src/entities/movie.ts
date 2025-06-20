@@ -1,45 +1,85 @@
-import { Type } from "class-transformer";
-import "reflect-metadata"
-import { ArrayMinSize, IsArray, IsInt, IsNotEmpty, Max, Min } from "class-validator";
+import { plainToInstance, Type } from "class-transformer";
+import "reflect-metadata";
+import {
+  ArrayMinSize,
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  Max,
+  Min,
+  validate,
+} from "class-validator";
 
 export class Movie {
   @IsNotEmpty({ message: "电影名称不得为空" })
-  @Type(()=>String)
+  @Type(() => String)
   public name: string;
 
   @IsNotEmpty({ message: "电影类型不得为空" })
   @ArrayMinSize(1, { message: "电影类型至少有一个" })
-  @IsArray({message:'必须为字符串数组'})
-  @Type(()=>String)
+  @IsArray({ message: "必须为字符串数组" })
+  @Type(() => String)
   public types: string[];
 
   @IsNotEmpty({ message: "上映地区不得为空" })
   @ArrayMinSize(1, { message: "上映至少有一个" })
-  @IsArray({message:'必须为字符串数组'})
-  @Type(()=>String)
+  @IsArray({ message: "必须为字符串数组" })
+  @Type(() => String)
   public areas: string[];
 
   @IsNotEmpty({ message: "时长不得为空" })
   @Min(1, { message: "时长不得小于1分钟" })
   @Max(999999, { message: "时长不得过长" })
   @IsInt({ message: "时长必须为整数" })
-  @Type(()=>Number)
+  @Type(() => Number)
   public timeDuration: number; //单位：分钟
 
   @IsNotEmpty({ message: "是否正在热映不得为空" })
-  @Type(()=>Boolean)
+  @Type(() => Boolean)
   public isHot: boolean = false;
 
   @IsNotEmpty({ message: "是否即将上映不得为空" })
-  @Type(()=>Boolean)
+  @Type(() => Boolean)
   public isComing: boolean = false;
 
   @IsNotEmpty({ message: "是否为经典影片不得为空" })
-  @Type(()=>Boolean)
+  @Type(() => Boolean)
   public isClassic: boolean = false;
 
-  @Type(()=>String)
-  public description?:string;
-  @Type(()=>String)
-  public poster?:string;
+  @Type(() => String)
+  public description?: string;
+  @Type(() => String)
+  public poster?: string;
+
+  /**
+   *将一个纯对象转化为Movie类的对象
+   * @param plainObj 待转换的对象
+   * @returns
+   */
+  public static plainToClass(plainObj: object): Movie {
+    if (plainObj instanceof Movie) {
+      return plainObj;
+    }
+    return plainToInstance(Movie, plainObj);
+  }
+
+  /**
+   * 验证数据
+   * @returns 
+   */
+  public async validateData(skipMissingProperties:boolean = false): Promise<string[]> {
+    const errs = await validate(this,{skipMissingProperties});
+    const temp = errs.map((err) => {
+      if (err.constraints) {
+        return Object.values(err.constraints);
+      }
+    });
+    const res: string[] = [];
+    temp.forEach((it) => {
+      if (it) {
+        res.push(...it);
+      }
+    });
+    return res
+  }
 }
