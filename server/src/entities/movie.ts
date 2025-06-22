@@ -1,4 +1,4 @@
-import { plainToInstance, Type } from "class-transformer";
+import { Type } from "class-transformer";
 import "reflect-metadata";
 import {
   ArrayMinSize,
@@ -7,10 +7,10 @@ import {
   IsNotEmpty,
   Max,
   Min,
-  validate,
 } from "class-validator";
+import { BaseEntity } from "./BaseEntity";
 
-export class Movie {
+export class Movie  extends BaseEntity{
   @IsNotEmpty({ message: "电影名称不得为空" })
   @Type(() => String)
   public name: string;
@@ -51,35 +51,20 @@ export class Movie {
   @Type(() => String)
   public poster?: string;
 
-  /**
-   *将一个纯对象转化为Movie类的对象
-   * @param plainObj 待转换的对象
-   * @returns
-   */
-  public static plainToClass(plainObj: object): Movie {
-    if (plainObj instanceof Movie) {
-      return plainObj;
-    }
-    return plainToInstance(Movie, plainObj);
+  // /**
+  //  *将一个纯对象转化为Movie类的对象
+  //  * @param plainObj 待转换的对象
+  //  * @returns
+  //  */
+  // public static plainToClass(plainObj: object): Movie {
+  //   if (plainObj instanceof Movie) {
+  //     return plainObj;
+  //   }
+  //   return plainToInstance(Movie, plainObj);
+  // }
+  public static transform(plainObj:object):Movie{
+    return super.plainToClass(plainObj,Movie)
   }
 
-  /**
-   * 验证数据
-   * @returns 
-   */
-  public async validateData(skipMissingProperties:boolean = false): Promise<string[]> {
-    const errs = await validate(this,{skipMissingProperties});
-    const temp = errs.map((err) => {
-      if (err.constraints) {
-        return Object.values(err.constraints);
-      }
-    });
-    const res: string[] = [];
-    temp.forEach((it) => {
-      if (it) {
-        res.push(...it);
-      }
-    });
-    return res
-  }
+  
 }
