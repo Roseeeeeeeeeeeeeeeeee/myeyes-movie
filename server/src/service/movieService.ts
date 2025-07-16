@@ -38,6 +38,11 @@ export class MovieService {
     return [];
   }
 
+  /**
+   * 根据电影id查找某部电影
+   * @param id 电影id
+   * @returns 
+   */
   public static async findById(id: string): Promise<IMovie | null> {
     return await MovieModel.findById(id);
   }
